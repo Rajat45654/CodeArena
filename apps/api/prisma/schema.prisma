@@ -1,0 +1,199 @@
+// Prisma Schema for CodeArena — Source of Truth
+// Documentation: Section 10 of codearena_final_build_spec.md
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Language {
+  CPP17
+  PYTHON3
+  JAVA17
+}
+
+enum SubmissionStatus {
+  QUEUED
+  COMPILING
+  RUNNING
+  ACCEPTED
+  WRONG_ANSWER
+  TIME_LIMIT_EXCEEDED
+  MEMORY_LIMIT_EXCEEDED
+  RUNTIME_ERROR
+  COMPILATION_ERROR
+  INTERNAL_ERROR // system fault, never counted as a penalty
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  username     String   @unique
+  passwordHash String
+  role         Role     @default(USER)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  submissions   Submission[]
+  registrations ContestParticipant[]
+
+  @@map("users")
+}
+
+model Problem {
+  id            String   @id @default(uuid())
+  slug          String   @unique
+  title         String
+  statementMd   String   @db.Text
+  timeLimitMs   Int      @default(2000)
+  memoryLimitMb Int      @default(256)
+  difficulty    String?
+  isPublished   Boolean  @default(false)
+  createdById   String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  testCases    TestCase[]
+  contestLinks ContestProblem[]
+  submissions  Submission[]
+
+  @@map("problems")
+}
+
+model TestCase {
+  id             String  @id @default(uuid())
+  problemId      String
+  ordinal        Int
+  input          String  @db.Text
+  expectedOutput String  @db.Text
+  isSample       Boolean @default(false)
+
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([problemId, ordinal])
+  @@index([problemId])
+  @@map("test_cases")
+}
+
+model Contest {
+  id             String    @id @default(uuid())
+  slug           String    @unique
+  title          String
+  description    String?   @db.Text
+  startsAt       DateTime
+  endsAt         DateTime
+  penaltyMinutes Int       @default(20)
+  freezeAt       DateTime? // optional leaderboard freeze
+  isPublic       Boolean   @default(true)
+  createdById    String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  problems     ContestProblem[]
+  participants ContestParticipant[]
+  submissions  Submission[]
+  results      ContestProblemResult[]
+
+  @@index([startsAt, endsAt])
+  @@map("contests")
+}
+
+model ContestProblem {
+  contestId String
+  problemId String
+  label     String // "A", "B", ...
+  ordinal   Int
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id])
+
+  @@id([contestId, problemId])
+  @@unique([contestId, label])
+  @@index([contestId])
+  @@map("contest_problems")
+}
+
+model ContestParticipant {
+  contestId    String
+  userId       String
+  registeredAt DateTime @default(now())
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@id([contestId, userId])
+  @@index([contestId])
+  @@index([userId])
+  @@map("contest_participants")
+}
+
+model Submission {
+  id                String           @id @default(uuid())
+  userId            String
+  problemId         String
+  contestId         String?
+  language          Language
+  sourceCode        String           @db.Text
+  status            SubmissionStatus @default(QUEUED)
+  failedTestOrdinal Int?
+  timeMs            Int?
+  memoryKb          Int?
+  compileOutput     String?          @db.Text
+  attempts          Int              @default(0) // judge attempts (retries)
+  createdAt         DateTime         @default(now())
+  judgedAt          DateTime?
+
+  user        User                   @relation(fields: [userId], references: [id])
+  problem     Problem                @relation(fields: [problemId], references: [id])
+  contest     Contest?               @relation(fields: [contestId], references: [id])
+  testResults SubmissionTestResult[]
+
+  @@index([userId, createdAt])
+  @@index([contestId, createdAt])
+  @@index([problemId, status])
+  @@index([status, createdAt])
+  @@map("submissions")
+}
+
+model SubmissionTestResult {
+  id           String           @id @default(uuid())
+  submissionId String
+  testOrdinal  Int
+  status       SubmissionStatus
+  timeMs       Int?
+  memoryKb     Int?
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@unique([submissionId, testOrdinal])
+  @@index([submissionId])
+  @@map("submission_test_results")
+}
+
+// Materialized per-user, per-problem contest state.
+// Recomputed (not incremented) under a lock whenever a contest submission reaches a final verdict.
+model ContestProblemResult {
+  contestId       String
+  userId          String
+  problemId       String
+  solved          Boolean   @default(false)
+  wrongAttempts   Int       @default(0) // counted BEFORE the first AC, by submission createdAt
+  solvedAtMinutes Int? // minutes from contest start to the first AC's SUBMISSION time
+  solvedAt        DateTime? // first AC's submission time (used for tie-breaks)
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  @@id([contestId, userId, problemId])
+  @@index([contestId, userId])
+  @@map("contest_problem_results")
+}
