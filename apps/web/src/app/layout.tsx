@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'CodeArena — College Coding Contest Platform',
+  title: 'CodeArena - College Coding Contest Platform',
   description: 'Production-style full-stack platform with a sandboxed code-execution engine',
 };
 

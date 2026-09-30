@@ -1,4 +1,4 @@
-// Prisma Schema for CodeArena — Source of Truth
+// Prisma Schema for CodeArena - Source of Truth
 // Documentation: Section 10 of codearena_final_build_spec.md
 
 datasource db {

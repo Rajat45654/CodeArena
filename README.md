@@ -1,4 +1,4 @@
-# CodeArena — College Coding Contest Platform
+# CodeArena - College Coding Contest Platform
 
 > **A production-style full-stack platform with a sandboxed code-execution engine designed for high-concurrency college contests.**
 
@@ -136,15 +136,15 @@ npm run dev:web     # Next.js Web on http://localhost:3000
 
 ## 5. Development Roadmap
 
-- [x] **Phase 0 — Setup:** Monorepo, Docker Compose, Prisma schema, shared packages, initial scaffolds.
-- [ ] **Phase 1 — Auth & Users:** JWT auth (httpOnly cookies), Argon2 password hashing, RBAC.
-- [ ] **Phase 2 — Problems & Test Cases:** Problem CRUD, hidden testcases, sample test exposure.
-- [ ] **Phase 3 — Sandbox Runner:** Docker image builds, runner isolation, abuse test suite.
-- [ ] **Phase 4 — Judge Orchestration:** Compile -> execute -> comparator -> verdict pipeline.
-- [ ] **Phase 5 — Queue & Submissions API:** BullMQ queue, guarded idempotent finalization.
-- [ ] **Phase 6 — Real-Time Gateway:** WebSockets gateway, Redis pub/sub bridge, polling fallback.
-- [ ] **Phase 7 — Frontend Core:** Monaco code editor, submission history, live verdict badge.
-- [ ] **Phase 8 — Contest Engine:** ICPC scoring, `ContestProblemResult`, Redis sorted sets, rejudge.
-- [ ] **Phase 9 — Hardening & Security:** Rate limiting, backpressure, orphan container janitor.
-- [ ] **Phase 10 — Testing & CI/CD:** End-to-end Playwright tests, automated GitHub Actions.
-- [ ] **Phase 11 — Benchmarking & Live Contest:** k6 load testing, failure experiments, college contest.
+- [x] **Phase 0 - Setup:** Monorepo, Docker Compose, Prisma schema, shared packages, initial scaffolds.
+- [ ] **Phase 1 - Auth & Users:** JWT auth (httpOnly cookies), Argon2 password hashing, RBAC.
+- [ ] **Phase 2 - Problems & Test Cases:** Problem CRUD, hidden testcases, sample test exposure.
+- [ ] **Phase 3 - Sandbox Runner:** Docker image builds, runner isolation, abuse test suite.
+- [ ] **Phase 4 - Judge Orchestration:** Compile -> execute -> comparator -> verdict pipeline.
+- [ ] **Phase 5 - Queue & Submissions API:** BullMQ queue, guarded idempotent finalization.
+- [ ] **Phase 6 - Real-Time Gateway:** WebSockets gateway, Redis pub/sub bridge, polling fallback.
+- [ ] **Phase 7 - Frontend Core:** Monaco code editor, submission history, live verdict badge.
+- [ ] **Phase 8 - Contest Engine:** ICPC scoring, `ContestProblemResult`, Redis sorted sets, rejudge.
+- [ ] **Phase 9 - Hardening & Security:** Rate limiting, backpressure, orphan container janitor.
+- [ ] **Phase 10 - Testing & CI/CD:** End-to-end Playwright tests, automated GitHub Actions.
+- [ ] **Phase 11 - Benchmarking & Live Contest:** k6 load testing, failure experiments, college contest.
