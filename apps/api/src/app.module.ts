@@ -5,6 +5,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { ProblemsModule } from './problems/problems.module';
 import { JwtAuthGuard } from './common/guards';
 import { RolesGuard } from './common/guards';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
@@ -19,6 +20,7 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
     HealthModule,
     UsersModule,
     AuthModule,
+    ProblemsModule,
   ],
   providers: [
     // Apply JWT auth globally - routes opt-out with @Public()
