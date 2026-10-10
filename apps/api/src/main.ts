@@ -46,7 +46,8 @@ async function bootstrap() {
     .setTitle('CodeArena API')
     .setDescription('College Coding Contest Platform API Specification')
     .setVersion('1.0.0')
-    .addBearerAuth()
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'access-token')
+    .addCookieAuth('accessToken')
     .addCookieAuth('refreshToken')
     .build();
 

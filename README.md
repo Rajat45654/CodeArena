@@ -137,7 +137,7 @@ npm run dev:web     # Next.js Web on http://localhost:3000
 ## 5. Development Roadmap
 
 - [x] **Phase 0 - Setup:** Monorepo, Docker Compose, Prisma schema, shared packages, initial scaffolds.
-- [ ] **Phase 1 - Auth & Users:** JWT auth (httpOnly cookies), Argon2 password hashing, RBAC.
+- [x] **Phase 1 - Auth & Users:** JWT auth (httpOnly cookies), Argon2 password hashing, RBAC.
 - [ ] **Phase 2 - Problems & Test Cases:** Problem CRUD, hidden testcases, sample test exposure.
 - [ ] **Phase 3 - Sandbox Runner:** Docker image builds, runner isolation, abuse test suite.
 - [ ] **Phase 4 - Judge Orchestration:** Compile -> execute -> comparator -> verdict pipeline.
