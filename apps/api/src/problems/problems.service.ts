@@ -307,6 +307,92 @@ export class ProblemsService {
     });
   }
 
+  async addTestCasesBatch(problemId: string, testCases: AddTestCaseDto[]) {
+    const problem = await this.prisma.problem.findUnique({
+      where: { id: problemId },
+    });
+
+    if (!problem) {
+      throw new NotFoundException(`Problem with ID "${problemId}" not found`);
+    }
+
+    const ordinals = testCases.map((tc) => tc.ordinal);
+    const uniqueOrdinals = new Set(ordinals);
+    if (uniqueOrdinals.size !== ordinals.length) {
+      throw new BadRequestException('Batch test cases must have unique ordinal values');
+    }
+
+    const existingTestCases = await this.prisma.testCase.findMany({
+      where: {
+        problemId,
+        ordinal: { in: ordinals },
+      },
+    });
+
+    if (existingTestCases.length > 0) {
+      const conflicting = existingTestCases.map((tc) => tc.ordinal).join(', ');
+      throw new ConflictException(
+        `Test case ordinals already exist for this problem: ${conflicting}`,
+      );
+    }
+
+    await this.prisma.testCase.createMany({
+      data: testCases.map((tc) => ({
+        problemId,
+        ordinal: tc.ordinal,
+        input: tc.input,
+        expectedOutput: tc.expectedOutput,
+        isSample: tc.isSample ?? false,
+      })),
+    });
+
+    return {
+      message: `Successfully created ${testCases.length} test cases`,
+      count: testCases.length,
+    };
+  }
+
+  async updateTestCase(
+    problemId: string,
+    testCaseId: string,
+    dto: { ordinal?: number; input?: string; expectedOutput?: string; isSample?: boolean },
+  ) {
+    const testCase = await this.prisma.testCase.findFirst({
+      where: { id: testCaseId, problemId },
+    });
+
+    if (!testCase) {
+      throw new NotFoundException(`Test case not found`);
+    }
+
+    if (dto.ordinal !== undefined && dto.ordinal !== testCase.ordinal) {
+      const conflict = await this.prisma.testCase.findUnique({
+        where: {
+          problemId_ordinal: {
+            problemId,
+            ordinal: dto.ordinal,
+          },
+        },
+      });
+
+      if (conflict) {
+        throw new ConflictException(
+          `Test case with ordinal ${dto.ordinal} already exists for this problem`,
+        );
+      }
+    }
+
+    return this.prisma.testCase.update({
+      where: { id: testCaseId },
+      data: {
+        ...(dto.ordinal !== undefined && { ordinal: dto.ordinal }),
+        ...(dto.input !== undefined && { input: dto.input }),
+        ...(dto.expectedOutput !== undefined && { expectedOutput: dto.expectedOutput }),
+        ...(dto.isSample !== undefined && { isSample: dto.isSample }),
+      },
+    });
+  }
+
   async deleteTestCase(problemId: string, testCaseId: string) {
     const testCase = await this.prisma.testCase.findFirst({
       where: {

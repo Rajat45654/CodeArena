@@ -136,6 +136,33 @@ export class ProblemsController {
   }
 
   @Roles(Role.ADMIN)
+  @Post('admin/problems/:id/test-cases/batch')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Upload batch test cases to a problem (Admin)' })
+  @ApiResponse({ status: 201, description: 'Batch test cases added successfully' })
+  async addTestCasesBatch(
+    @Param('id') id: string,
+    @Body() dto: { testCases: AddTestCaseDto[] },
+  ) {
+    return this.problemsService.addTestCasesBatch(id, dto.testCases);
+  }
+
+  @Roles(Role.ADMIN)
+  @Patch('admin/problems/:id/test-cases/:testCaseId')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update a test case in a problem (Admin)' })
+  @ApiResponse({ status: 200, description: 'Test case updated successfully' })
+  @ApiResponse({ status: 404, description: 'Test case not found' })
+  async updateTestCase(
+    @Param('id') id: string,
+    @Param('testCaseId') testCaseId: string,
+    @Body() dto: Partial<AddTestCaseDto>,
+  ) {
+    return this.problemsService.updateTestCase(id, testCaseId, dto);
+  }
+
+  @Roles(Role.ADMIN)
   @Delete('admin/problems/:id/test-cases/:testCaseId')
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()

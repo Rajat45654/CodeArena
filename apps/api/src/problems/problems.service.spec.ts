@@ -27,6 +27,7 @@ describe('ProblemsService', () => {
         findMany: jest.fn(),
         create: jest.fn(),
         createMany: jest.fn(),
+        update: jest.fn(),
         delete: jest.fn(),
       },
       $transaction: jest.fn((callback) => callback(prisma)),
@@ -243,6 +244,50 @@ describe('ProblemsService', () => {
 
       const result = await service.deleteProblem('p-1');
       expect(result.message).toBe('Problem deleted successfully');
+    });
+  });
+
+  describe('test case operations', () => {
+    it('should add a single test case', async () => {
+      prisma.problem.findUnique.mockResolvedValue({ id: 'p-1' });
+      prisma.testCase.findUnique.mockResolvedValue(null);
+      prisma.testCase.create.mockResolvedValue({ id: 'tc-1', ordinal: 1 });
+
+      const result = await service.addTestCase('p-1', {
+        ordinal: 1,
+        input: '1',
+        expectedOutput: '1',
+        isSample: false,
+      });
+      expect(result.id).toBe('tc-1');
+    });
+
+    it('should add a batch of test cases', async () => {
+      prisma.problem.findUnique.mockResolvedValue({ id: 'p-1' });
+      prisma.testCase.findMany.mockResolvedValue([]);
+      prisma.testCase.createMany.mockResolvedValue({ count: 2 });
+
+      const result = await service.addTestCasesBatch('p-1', [
+        { ordinal: 1, input: '1', expectedOutput: '1' },
+        { ordinal: 2, input: '2', expectedOutput: '2' },
+      ]);
+      expect(result.count).toBe(2);
+    });
+
+    it('should update a test case', async () => {
+      prisma.testCase.findFirst.mockResolvedValue({ id: 'tc-1', ordinal: 1 });
+      prisma.testCase.update.mockResolvedValue({ id: 'tc-1', input: 'new input' });
+
+      const result = await service.updateTestCase('p-1', 'tc-1', { input: 'new input' });
+      expect(result.input).toBe('new input');
+    });
+
+    it('should delete a test case', async () => {
+      prisma.testCase.findFirst.mockResolvedValue({ id: 'tc-1' });
+      prisma.testCase.delete.mockResolvedValue({ id: 'tc-1' });
+
+      const result = await service.deleteTestCase('p-1', 'tc-1');
+      expect(result.message).toBe('Test case deleted successfully');
     });
   });
 });

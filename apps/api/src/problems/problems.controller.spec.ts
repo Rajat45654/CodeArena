@@ -17,6 +17,8 @@ describe('ProblemsController', () => {
       deleteProblem: jest.fn(),
       togglePublish: jest.fn(),
       addTestCase: jest.fn(),
+      addTestCasesBatch: jest.fn(),
+      updateTestCase: jest.fn(),
       deleteTestCase: jest.fn(),
     };
 
@@ -110,6 +112,21 @@ describe('ProblemsController', () => {
       (service.addTestCase as jest.Mock).mockResolvedValue({ id: 'tc-1', ...tcDto });
       const result = await controller.addTestCase('p-1', tcDto);
       expect(service.addTestCase).toHaveBeenCalledWith('p-1', tcDto);
+      expect(result.id).toBe('tc-1');
+    });
+
+    it('should add batch test cases via admin', async () => {
+      const tcBatch = [{ ordinal: 1, input: '1', expectedOutput: '1' }];
+      (service.addTestCasesBatch as jest.Mock).mockResolvedValue({ count: 1 });
+      const result = await controller.addTestCasesBatch('p-1', { testCases: tcBatch as any });
+      expect(service.addTestCasesBatch).toHaveBeenCalledWith('p-1', tcBatch);
+      expect(result.count).toBe(1);
+    });
+
+    it('should update test case via admin', async () => {
+      (service.updateTestCase as jest.Mock).mockResolvedValue({ id: 'tc-1', ordinal: 2 });
+      const result = await controller.updateTestCase('p-1', 'tc-1', { ordinal: 2 });
+      expect(service.updateTestCase).toHaveBeenCalledWith('p-1', 'tc-1', { ordinal: 2 });
       expect(result.id).toBe('tc-1');
     });
 
