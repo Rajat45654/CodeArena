@@ -11,6 +11,15 @@ jobs:
     name: Lint, Typecheck & Test
     runs-on: ubuntu-latest
 
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://codearena:codearena_secret@localhost:5433/codearena_db?schema=public
+      REDIS_URL: redis://localhost:6380
+      JWT_ACCESS_SECRET: codearena_super_secret_jwt_access_key_change_in_production_32chars
+      JWT_REFRESH_SECRET: codearena_super_secret_jwt_refresh_key_change_in_production_32chars
+      JWT_ACCESS_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 7d
+
     services:
       postgres:
         image: postgres:16-alpine
@@ -21,7 +30,7 @@ jobs:
         ports:
           - 5433:5432
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U codearena -d codearena_db"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 5
@@ -51,8 +60,12 @@ jobs:
 
       - name: Generate Prisma Client
         run: npm run db:generate
-        env:
-          DATABASE_URL: postgresql://codearena:codearena_secret@localhost:5433/codearena_db?schema=public
+
+      - name: Run Database Migrations
+        run: npx prisma migrate deploy --schema apps/api/prisma/schema.prisma
+
+      - name: Seed Database for Integration Tests
+        run: npm run db:seed --workspace=@codearena/api
 
       - name: Typecheck Shared Packages
         run: |
@@ -60,4 +73,4 @@ jobs:
           npm run build --workspace=@codearena/validation
 
       - name: Run Tests
-        run: npm run test --if-present
+        run: npm run test --workspaces --if-present -- --runInBand
